@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, reactive, onMounted } from "vue";
 import { uid } from "quasar";
 import axios from "axios";
 require("md-gum-polyfill");
@@ -79,7 +79,7 @@ require("md-gum-polyfill");
 export default defineComponent({
   name: "CameraPage",
   setup() {
-    const posts = ref([
+    const posts = reactive([
       {
         id: uid(),
         caption: "",
@@ -108,7 +108,7 @@ export default defineComponent({
         });
     };
 
-    const captureImage = () => {
+    function captureImage() {
       canvas.value.width = video.value.getBoundingClientRect().width;
       canvas.value.height = video.value.getBoundingClientRect().height;
       let context = canvas.value.getContext("2d");
@@ -119,13 +119,12 @@ export default defineComponent({
         canvas.value.width,
         canvas.value.height
       );
-      imageCaptured.value = "True";
-      posts.value.photo = dataURItoBlob(canvas.value.toDataURL());
-      console.log(posts.value.photo);
-    };
+      imageCaptured.value = true;
+      posts.photo = dataURItoBlob(canvas.value.toDataURL());
+    }
 
-    const captureImageFallback = (file) => {
-      posts.value.photo = file;
+    const captureImageFallback = (event) => {
+      posts.photo = event;
       let context = canvas.value.getContext("2d");
 
       let reader = new FileReader();
@@ -136,10 +135,11 @@ export default defineComponent({
           canvas.value.height = img.height;
           context.drawImage(img, 0, 0);
           imageCaptured.value = true;
+          console.log(img.width);
         };
         img.src = event.target.result;
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(event.target.files[0]);
     };
 
     const captureImageFallback2 = () => {
@@ -175,18 +175,12 @@ export default defineComponent({
     };
 
     function getCityAndCountry(position) {
-      console.log("getcitycountry position.coords = ", position.coords);
-      console.log(position.coords.latitude);
-      console.log(position.coords.longitude);
       let apiUrl = `http://geocode.xyz/${position.coords.latitude},${position.coords.longitude}?json=1&auth=96263852041508918902x9212`;
-      console.log("apiUrl= ", apiUrl);
       axios
         .get(apiUrl)
         .then((result) => {
           const state = result.data.state;
           const city = result.data.city;
-          console.log("city = ", city);
-          console.log("state = ", state);
           loadingState.value = false;
           locationSuccess(result);
         })
@@ -197,9 +191,9 @@ export default defineComponent({
     }
 
     const locationSuccess = (result) => {
-      posts.value.location = result.data.city;
+      posts.location = result.data.city;
       if (result.data.country) {
-        posts.value.location += `, ${result.data.state}`;
+        posts.location += `, ${result.data.state}`;
       }
     };
 
