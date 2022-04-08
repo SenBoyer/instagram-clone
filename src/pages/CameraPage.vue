@@ -71,7 +71,13 @@
 </template>
 
 <script>
-import { defineComponent, ref, reactive, onMounted } from "vue";
+import {
+  defineComponent,
+  ref,
+  reactive,
+  onMounted,
+  onBeforeUnmount,
+} from "vue";
 import { uid } from "quasar";
 import axios from "axios";
 require("md-gum-polyfill");
@@ -79,15 +85,13 @@ require("md-gum-polyfill");
 export default defineComponent({
   name: "CameraPage",
   setup() {
-    const posts = reactive([
-      {
-        id: uid(),
-        caption: "",
-        location: "",
-        photo: null,
-        date: Date.now(),
-      },
-    ]);
+    const posts = reactive({
+      id: uid(),
+      caption: "",
+      location: "",
+      photo: null,
+      date: Date.now(),
+    });
     const imageCaptured = ref(false);
     const imageUpload = ref([]);
     const hasCameraSupport = ref(true);
@@ -121,6 +125,7 @@ export default defineComponent({
       );
       imageCaptured.value = true;
       posts.photo = dataURItoBlob(canvas.value.toDataURL());
+      disableCamera();
     }
 
     const captureImageFallback = (event) => {
@@ -135,11 +140,11 @@ export default defineComponent({
           canvas.value.height = img.height;
           context.drawImage(img, 0, 0);
           imageCaptured.value = true;
-          console.log(img.width);
         };
         img.src = event.target.result;
       };
       reader.readAsDataURL(event.target.files[0]);
+      posts.photo = dataURItoBlob(canvas.value.toDataURL());
     };
 
     const captureImageFallback2 = () => {
@@ -179,8 +184,6 @@ export default defineComponent({
       axios
         .get(apiUrl)
         .then((result) => {
-          const state = result.data.state;
-          const city = result.data.city;
           loadingState.value = false;
           locationSuccess(result);
         })
@@ -190,10 +193,15 @@ export default defineComponent({
         });
     }
 
+    const disableCamera = () => {
+      video.value.srcObject.getVideoTracks().forEach((track) => {
+        track.stop();
+      });
+    };
+
     const locationSuccess = (result) => {
-      posts.location = result.data.city;
       if (result.data.country) {
-        posts.location += `, ${result.data.state}`;
+        posts.location = result.data.city + ", " + result.data.state;
       }
     };
 
@@ -203,6 +211,7 @@ export default defineComponent({
     }
 
     function dataURItoBlob(dataURI) {
+      // https://stackoverflow.com/questions/12168909/blob-from-dataurl
       // convert base64 to raw binary data held in a string
       // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
       var byteString = atob(dataURI.split(",")[1]);
@@ -227,6 +236,12 @@ export default defineComponent({
       return blob;
     }
 
+    onBeforeUnmount(() => {
+      if (hasCameraSupport) {
+        disableCamera();
+      }
+    });
+
     onMounted(() => {
       initCamera();
     });
@@ -235,6 +250,7 @@ export default defineComponent({
       posts,
       initCamera,
       onMounted,
+      onBeforeUnmount,
       captureImage,
       video,
       canvas,
@@ -243,6 +259,7 @@ export default defineComponent({
       imageUpload,
       captureImageFallback,
       getLocation,
+      disableCamera,
       getCityAndCountry,
       locationSuccess,
       loadingState,
