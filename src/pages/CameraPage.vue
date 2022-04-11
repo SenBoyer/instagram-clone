@@ -78,7 +78,7 @@ import {
   onMounted,
   onBeforeUnmount,
 } from "vue";
-import { uid } from "quasar";
+import { uid, useQuasar } from "quasar";
 import axios from "axios";
 require("md-gum-polyfill");
 
@@ -98,6 +98,7 @@ export default defineComponent({
     const video = ref(null);
     const canvas = ref(null);
     const loadingState = ref(false);
+    const $q = useQuasar();
 
     const initCamera = () => {
       navigator.mediaDevices
@@ -147,26 +148,6 @@ export default defineComponent({
       posts.photo = dataURItoBlob(canvas.value.toDataURL());
     };
 
-    const captureImageFallback2 = () => {
-      let imageLoader = document.getElementById("uploader");
-      imageLoader.addEventListener("change", handleImage, false);
-      let context = canvas.value.getContext("2d");
-
-      function handleImage(event) {
-        let reader = new FileReader();
-        reader.onload = function (event) {
-          let img = new Image();
-          img.onload = function () {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            context.drawImage(img, 0, 0);
-          };
-          img.src = event.target.result;
-        };
-        reader.readAsDataURL(event.target.files[0]);
-      }
-    };
-
     const getLocation = () => {
       loadingState.value = true;
       navigator.geolocation.getCurrentPosition(
@@ -174,6 +155,11 @@ export default defineComponent({
           getCityAndCountry(position);
         },
         (err) => {
+          loadingState.value = false;
+          $q.dialog({
+            title: "Error",
+            message: "Could not access user location",
+          });
           console.log("err= ", err);
         }
       );
@@ -189,7 +175,7 @@ export default defineComponent({
         })
         .catch((err) => {
           console.log("err= ", err), { timeout: 7000 };
-          loadingState.value = false;
+          locationError();
         });
     }
 
@@ -203,6 +189,15 @@ export default defineComponent({
       if (result.data.country) {
         posts.location = result.data.city + ", " + result.data.state;
       }
+    };
+
+    const locationError = () => {
+      loadingState.value = false;
+      $q.dialog({
+        title: "Error",
+        message: "Could not reach image server",
+      });
+      console.log(err);
     };
 
     function locationSupported() {
