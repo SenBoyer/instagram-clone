@@ -1,6 +1,27 @@
 <template>
   <q-page class="constrain q-pa-md">
-    <div class="row q-col-gutter-lg">
+    <template v-if="!loggedIn">
+      <q-card class="my-card flex column items-center">
+        <q-card-section>
+          <h1 class="font-grand-hotel text-bold">Finstagram</h1>
+          <q-input
+            outlined
+            v-model="userName"
+            placeholder="Enter username"
+            :dense="dense"
+          />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions vertical>
+          <q-btn color="primary" style="width: 200px" @click="signUp()">
+            <div class="ellipsis">Log in</div>
+          </q-btn>
+        </q-card-actions>
+      </q-card>
+    </template>
+    <div class="row q-col-gutter-lg" v-else>
       <div class="col-12 col-sm-8">
         <template v-if="!currentlyLoading && posts.length">
           <q-card
@@ -18,7 +39,7 @@
               </q-item-section>
 
               <q-item-section>
-                <q-item-label class="text-bold">USERNAME</q-item-label>
+                <q-item-label class="text-bold">{{ userName }}</q-item-label>
                 <q-item-label caption> {{ post.location }} </q-item-label>
               </q-item-section>
             </q-item>
@@ -65,6 +86,62 @@
               />
             </q-card-section>
           </q-card>
+          <q-card flat bordered>
+            <q-item>
+              <q-item-section avatar>
+                <q-skeleton type="QAvatar" animation="fade" size="40px" />
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label>
+                  <q-skeleton type="text" animation="fade" />
+                </q-item-label>
+                <q-item-label caption>
+                  <q-skeleton type="text" animation="fade" />
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-skeleton height="200px" square animation="fade" />
+
+            <q-card-section>
+              <q-skeleton type="text" class="text-subtitle2" animation="fade" />
+              <q-skeleton
+                type="text"
+                width="50%"
+                class="text-subtitle2"
+                animation="fade"
+              />
+            </q-card-section>
+          </q-card>
+          <q-card flat bordered>
+            <q-item>
+              <q-item-section avatar>
+                <q-skeleton type="QAvatar" animation="fade" size="40px" />
+              </q-item-section>
+
+              <q-item-section>
+                <q-item-label>
+                  <q-skeleton type="text" animation="fade" />
+                </q-item-label>
+                <q-item-label caption>
+                  <q-skeleton type="text" animation="fade" />
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-skeleton height="200px" square animation="fade" />
+
+            <q-card-section>
+              <q-skeleton type="text" class="text-subtitle2" animation="fade" />
+              <q-skeleton
+                type="text"
+                width="50%"
+                class="text-subtitle2"
+                animation="fade"
+              />
+            </q-card-section>
+          </q-card>
         </template>
       </div>
       <div class="col-4">
@@ -76,8 +153,10 @@
           </q-item-section>
 
           <q-item-section>
-            <q-item-label class="text-bold">USERNAME</q-item-label>
-            <q-item-label caption> CAPTION SECTION</q-item-label>
+            <q-item-label class="text-bold">{{ userName }}</q-item-label>
+            <q-item-label caption>
+              Add some friends to see who's online!</q-item-label
+            >
           </q-item-section>
         </q-item>
       </div>
@@ -96,6 +175,12 @@ export default defineComponent({
     const $q = useQuasar();
     const currentlyLoading = ref(false);
     const posts = ref([]);
+    const loggedIn = ref(false);
+    const userName = ref("");
+
+    const signUp = () => {
+      loggedIn.value = true;
+    };
 
     const niceDate = (value) => {
       return date.formatDate(value, "MMMM D h:mmA YYYY");
@@ -105,11 +190,11 @@ export default defineComponent({
       console.log("getPosts");
       currentlyLoading.value = true;
       axios
-        .get("http://localhost:3000/posts")
+        .get(`${process.env.API}/posts`)
         .then((response) => {
           currentlyLoading.value = false;
           posts.value = response.data;
-          console.log("response= ", response);
+          console.log("response data= ", response.data);
         })
         .catch((err) => {
           currentlyLoading.value = false;
@@ -125,7 +210,15 @@ export default defineComponent({
       getPosts();
     });
 
-    return { posts, niceDate, currentlyLoading, getPosts };
+    return {
+      posts,
+      niceDate,
+      currentlyLoading,
+      getPosts,
+      loggedIn,
+      signUp,
+      userName,
+    };
   },
 });
 </script>

@@ -1,4 +1,4 @@
-# quasargram (quasar-project)
+# finstagram (quasar-project)
 
 A Quasar Project
 

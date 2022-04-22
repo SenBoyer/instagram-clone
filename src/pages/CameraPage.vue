@@ -19,6 +19,7 @@
       <q-btn
         v-if="hasCameraSupport"
         @click="captureImage()"
+        :disable="imageCaptured"
         round
         color="grey-10"
         icon="fa-solid fa-camera"
@@ -39,7 +40,7 @@
         <q-input
           v-model="posts.caption"
           class="col col-sm-6"
-          label="caption"
+          label="Caption*"
           dense
         />
       </div>
@@ -48,7 +49,7 @@
           :loading="loadingState"
           v-model="posts.location"
           class="col col-sm-6"
-          label="location"
+          label="Location"
           dense
         >
           <template v-slot:append>
@@ -65,7 +66,14 @@
       </div>
     </div>
     <div class="row justify-center q-mt-lg">
-      <q-btn unelevated rounded color="grey-9" label="Post Image" />
+      <q-btn
+        @click="addPost()"
+        unelevated
+        rounded
+        color="grey-9"
+        label="Post Image"
+        :disable="!posts.caption || !posts.photo"
+      />
     </div>
   </q-page>
 </template>
@@ -205,6 +213,40 @@ export default defineComponent({
       return false;
     }
 
+    function addPost() {
+      this.$q.loading.show();
+      let formData = new FormData();
+      formData.append("id", posts.id);
+      formData.append("caption", posts.caption);
+      formData.append("location", posts.location);
+      formData.append("date", posts.date);
+      formData.append("file", posts.photo, posts.id + ".png");
+
+      axios
+        .post(`${process.env.API}/createPost`, formData)
+        .then((response) => {
+          console.log("response = ", response);
+          $q.notify({
+            message: "Post created!",
+            actions: [{ label: "Dismiss", color: "white" }],
+          });
+          setTimeout(() => {
+            this.$router.push("/");
+          }, 1500);
+          this.$q.loading.hide();
+        })
+        .catch((err) => {
+          console.log(err);
+          $q.dialog({
+            title: "Error",
+            message: "Sorry! Could not make post.",
+          });
+          this.$q.loading.hide();
+        });
+
+      console.log("POST BUTTON PRESSED");
+    }
+
     function dataURItoBlob(dataURI) {
       // https://stackoverflow.com/questions/12168909/blob-from-dataurl
       // convert base64 to raw binary data held in a string
@@ -247,6 +289,7 @@ export default defineComponent({
       onMounted,
       onBeforeUnmount,
       captureImage,
+      addPost,
       video,
       canvas,
       imageCaptured,

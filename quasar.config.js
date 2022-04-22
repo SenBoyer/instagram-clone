@@ -9,6 +9,8 @@
 // https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js
 
 const { configure } = require("quasar/wrappers");
+let LOCAL_API = "http://localhost:3000";
+let PRODUCTION_API = "https://finsta-backend-heroku.herokuapp.com";
 
 module.exports = configure(function (ctx) {
   return {
@@ -41,7 +43,11 @@ module.exports = configure(function (ctx) {
     ],
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-build
+
     build: {
+      env: {
+        API: PRODUCTION_API, // PRODUCTION_API || LOCAL_API
+      },
       vueRouterMode: "hash", // available values: 'hash', 'history'
 
       // transpile: false,
@@ -91,7 +97,7 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ["Loading", "Dialog"],
+      plugins: ["Loading", "Dialog", "Notify"],
     },
 
     // animations: 'all', // --- includes all animations
@@ -130,8 +136,8 @@ module.exports = configure(function (ctx) {
       chainWebpackCustomSW(/* chain */) {},
 
       manifest: {
-        name: `quasargram`,
-        short_name: `quasargram`,
+        name: `finstagram`,
+        short_name: `finstagram`,
         description: `A Quasar Project`,
         display: "standalone",
         orientation: "portrait",
