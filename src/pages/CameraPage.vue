@@ -174,7 +174,7 @@ export default defineComponent({
     };
 
     function getCityAndCountry(position) {
-      let apiUrl = `http://geocode.xyz/${position.coords.latitude},${position.coords.longitude}?json=1&auth=96263852041508918902x9212`;
+      let apiUrl = `https://geocode.xyz/${position.coords.latitude},${position.coords.longitude}?json=1&auth=96263852041508918902x9212`;
       axios
         .get(apiUrl)
         .then((result) => {
@@ -203,7 +203,7 @@ export default defineComponent({
       loadingState.value = false;
       $q.dialog({
         title: "Error",
-        message: "Could not reach image server",
+        message: "Could not access location",
       });
       console.log(err);
     };
