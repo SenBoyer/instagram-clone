@@ -121,6 +121,8 @@ app.post("/createPost", (request, response) => {
       console.log("bucketname= ", bucket.name);
       console.log("uploadedFile.name= ", uploadedFile.name);
       console.log("token_id= ", token_id);
+      console.log("fields= ", fields);
+      console.log("index.js // val= ", val);
       db.collection("posts")
         .doc(fields.id)
         .set({
@@ -129,6 +131,7 @@ app.post("/createPost", (request, response) => {
           location: fields.location,
           date: parseInt(fields.date),
           imgURL: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${token_id}`,
+          name: fields.name,
         })
         .then((response) => {
           console.log(response);

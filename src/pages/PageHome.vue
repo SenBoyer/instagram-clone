@@ -1,27 +1,6 @@
 <template>
   <q-page class="constrain q-pa-md">
-    <template v-if="!loggedIn">
-      <q-card class="my-card flex column items-center">
-        <q-card-section>
-          <h1 class="font-grand-hotel text-bold">Finstagram</h1>
-          <q-input
-            outlined
-            v-model="userName"
-            placeholder="Enter username"
-            :dense="dense"
-          />
-        </q-card-section>
-
-        <q-separator />
-
-        <q-card-actions vertical>
-          <q-btn color="primary" style="width: 200px" @click="signUp()">
-            <div class="ellipsis">Log in</div>
-          </q-btn>
-        </q-card-actions>
-      </q-card>
-    </template>
-    <div class="row q-col-gutter-lg" v-else>
+    <div class="row q-col-gutter-lg">
       <div class="col-12 col-sm-8">
         <template v-if="!currentlyLoading && posts.length">
           <q-card
@@ -40,7 +19,9 @@
 
               <q-item-section>
                 <q-item-label class="text-bold">{{ userName }}</q-item-label>
-                <q-item-label caption> {{ post.location }} </q-item-label>
+                <q-item-label caption>
+                  {{ post.location }} + {{ store.userName }}</q-item-label
+                >
               </q-item-section>
             </q-item>
 
@@ -168,6 +149,8 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { date, useQuasar } from "quasar";
 import axios from "axios";
+import { computed } from "vue";
+import { useUsernameStore } from "../stores/example-store";
 
 export default defineComponent({
   name: "PageHome",
@@ -177,6 +160,7 @@ export default defineComponent({
     const posts = ref([]);
     const loggedIn = ref(false);
     const userName = ref("");
+    const store = useUsernameStore();
 
     const signUp = () => {
       loggedIn.value = true;
@@ -188,6 +172,7 @@ export default defineComponent({
 
     const getPosts = () => {
       console.log("getPosts");
+      console.log("store= ", store);
       currentlyLoading.value = true;
       axios
         .get(`${process.env.API}/posts`)
@@ -218,6 +203,7 @@ export default defineComponent({
       loggedIn,
       signUp,
       userName,
+      store,
     };
   },
 });

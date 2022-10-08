@@ -38,6 +38,14 @@
       </q-file>
       <div class="row justify-center q-pa-md">
         <q-input
+          v-model="posts.name"
+          class="col col-sm-6"
+          label="Username*"
+          dense
+        />
+      </div>
+      <div class="row justify-center q-pa-md">
+        <q-input
           v-model="posts.caption"
           class="col col-sm-6"
           label="Caption*"
@@ -87,6 +95,7 @@ import {
   onBeforeUnmount,
 } from "vue";
 import { uid, useQuasar } from "quasar";
+import { useUsernameStore } from "../stores/example-store";
 import axios from "axios";
 require("md-gum-polyfill");
 
@@ -99,6 +108,7 @@ export default defineComponent({
       location: "",
       photo: null,
       date: Date.now(),
+      name: "",
     });
     const imageCaptured = ref(false);
     const imageUpload = ref([]);
@@ -107,6 +117,8 @@ export default defineComponent({
     const canvas = ref(null);
     const loadingState = ref(false);
     const $q = useQuasar();
+    const store = useUsernameStore();
+    console.log("CameraPage store.name= ", store.name);
 
     const initCamera = () => {
       navigator.mediaDevices
@@ -214,13 +226,14 @@ export default defineComponent({
     }
 
     function addPost() {
-      this.$q.loading.show();
+      $q.loading.show();
       let formData = new FormData();
       formData.append("id", posts.id);
       formData.append("caption", posts.caption);
       formData.append("location", posts.location);
       formData.append("date", posts.date);
       formData.append("file", posts.photo, posts.id + ".png");
+      formData.append("name", posts.name);
 
       axios
         .post(`${process.env.API}/createPost`, formData)
@@ -245,6 +258,7 @@ export default defineComponent({
         });
 
       console.log("POST BUTTON PRESSED");
+      console.log("posts.name=", posts.name);
     }
 
     function dataURItoBlob(dataURI) {
