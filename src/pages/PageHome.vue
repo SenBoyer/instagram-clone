@@ -26,7 +26,7 @@
             </q-item>
 
             <q-separator />
-            <q-img :src="post.imgURL" />
+            <q-img :src="post.imgUrl" />
             <q-card-section>
               <div>{{ post.caption }}</div>
               <div class="text-captionc text-grey">
