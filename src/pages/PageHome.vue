@@ -18,10 +18,8 @@
               </q-item-section>
 
               <q-item-section>
-                <q-item-label class="text-bold">{{ userName }}</q-item-label>
-                <q-item-label caption>
-                  {{ post.location }} + {{ store.userName }}</q-item-label
-                >
+                <q-item-label class="text-bold">{{ post.name }}</q-item-label>
+                <q-item-label caption> {{ post.location }} </q-item-label>
               </q-item-section>
             </q-item>
 
