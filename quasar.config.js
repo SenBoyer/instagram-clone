@@ -46,7 +46,7 @@ module.exports = configure(function (ctx) {
 
     build: {
       env: {
-        API: PRODUCTION_API, // PRODUCTION_API || LOCAL_API
+        API: PRODUCTION_API,
       },
       vueRouterMode: "hash", // available values: 'hash', 'history'
 

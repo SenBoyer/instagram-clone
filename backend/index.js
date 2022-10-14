@@ -1,31 +1,26 @@
-// Dependencies
+//========DEPENDENCIES==========
 const express = require("express");
-const {
-  initializeApp,
-  applicationDefault,
-  cert,
-} = require("firebase-admin/app");
-const {
-  getFirestore,
-  Timestamp,
-  FieldValue,
-} = require("firebase-admin/firestore");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { v4: uuidv4 } = require("uuid");
-
-let busboy = require("busboy");
-let fields = {};
-let fileData = {};
+const cors = require("cors");
+const busboy = require("busboy");
 let path = require("path");
 let os = require("os");
 let fs = require("fs");
-// Config-Express
-const app = express();
-const port = 3000;
+let fields = {};
+let fileData = {};
 
-// config firebase
+//========EXPRESS JS==========
+
+const app = express();
+app.use(cors());
+
+//========FIREBASE==========
 
 const serviceAccount = require("./serviceAccountKey.json");
+const { useAttrs } = require("vue");
 
 initializeApp({
   credential: cert(serviceAccount),
@@ -33,46 +28,32 @@ initializeApp({
 });
 
 const db = getFirestore();
-
-// end - point - posts;
-
 const bucket = getStorage().bucket();
 
-async function Firebase() {
-  app.get("/posts", (request, response) => {
-    response.set("Access-Control-Allow-Origin", "*");
-    let posts = [];
-    console.log("posts= ", posts);
-    db.collection("posts")
-      .orderBy("date", "desc")
-      .get()
-      .then((snapshot) => {
-        snapshot.forEach((doc) => {
-          posts.push(doc.data());
-        });
-        response.send(posts);
+//========END POINTS========
+
+app.get("/posts", (request, response) => {
+  let posts = [];
+  db.collection("posts")
+    .orderBy("date", "desc")
+    .get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        posts.push(doc.data());
       });
-  });
-}
-
-Firebase();
-
-// endpoint-create
+      response.send(posts);
+    });
+});
 
 app.post("/createPost", (request, response) => {
   response.set("Access-Control-Allow-Origin", "*");
   let token_id = uuidv4();
-  console.log("token_id= ", token_id); /*THIS WORKS AND PRINTS*/
-
-  /*NONE OF THE CONSOLE.LOG()'s GETS PRINTED AFTER HERE*/
 
   const bb = busboy({ headers: request.headers });
 
   bb.on("file", (name, file, info) => {
     const { filename, encoding, mimeType } = info;
-    console.log("info=", info);
     let filepath = path.join(os.tmpdir(), filename);
-    console.log("filepath= ", filepath);
     file.pipe(fs.createWriteStream(filepath));
     fileData = { filepath, mimeType };
     console.log(
@@ -96,7 +77,6 @@ app.post("/createPost", (request, response) => {
   });
 
   bb.on("close", () => {
-    console.log(fields);
     console.log("Done parsing form!");
     bucket.upload(
       fileData.filepath,
@@ -115,13 +95,8 @@ app.post("/createPost", (request, response) => {
         }
       }
     );
-    response.writeHead(303, { Connection: "close", Location: "/" });
+    // response.writeHead(303, { Connection: "close", Location: "/" });
     function createDocument(uploadedFile) {
-      console.log("createDocument running now");
-      console.log("bucketname= ", bucket.name);
-      console.log("uploadedFile.name= ", uploadedFile.name);
-      console.log("token_id= ", token_id);
-      console.log("fields= ", fields);
       db.collection("posts")
         .doc(fields.id)
         .set({
@@ -132,13 +107,19 @@ app.post("/createPost", (request, response) => {
           imgUrl: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${token_id}`,
           name: fields.name,
         })
-        .then((response) => {
-          console.log("response=", response);
+        .then((req, res) => {
+          response.send("Post created");
         });
     }
-    response.end();
   });
   request.pipe(bb);
 });
-// listen
-app.listen(process.env.PORT || 3000);
+
+app.delete("/deletePost/:id", (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  db.collection("posts").doc(req.params.id).delete();
+  res.send({ result: `Deleted post with id: ${req.params.id}` });
+});
+
+//========LOCALHOST LISTEN==========
+app.listen(3000);

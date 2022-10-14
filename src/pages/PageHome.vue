@@ -21,6 +21,12 @@
                 <q-item-label class="text-bold">{{ post.name }}</q-item-label>
                 <q-item-label caption> {{ post.location }} </q-item-label>
               </q-item-section>
+              <q-btn
+                @click="deletePost(post.id)"
+                square
+                color="red"
+                icon="fa-solid fa-x"
+              />
             </q-item>
 
             <q-separator />
@@ -160,24 +166,29 @@ export default defineComponent({
     const userName = ref("");
     const store = useUsernameStore();
 
-    const signUp = () => {
-      loggedIn.value = true;
-    };
-
     const niceDate = (value) => {
       return date.formatDate(value, "MMMM D h:mmA YYYY");
     };
 
+    const deletePost = async (postID) => {
+      await axios
+        .delete(`${process.env.API}/deletePost/${postID}`)
+        .then((res) => {
+          $q.notify({
+            type: "positive",
+            message: "Post deleted!",
+          });
+          getPosts();
+        });
+    };
+
     const getPosts = () => {
-      console.log("getPosts");
-      console.log("store= ", store);
       currentlyLoading.value = true;
       axios
         .get(`${process.env.API}/posts`)
         .then((response) => {
           currentlyLoading.value = false;
           posts.value = response.data;
-          console.log("response data= ", response.data);
         })
         .catch((err) => {
           currentlyLoading.value = false;
@@ -198,9 +209,8 @@ export default defineComponent({
       niceDate,
       currentlyLoading,
       getPosts,
+      deletePost,
       loggedIn,
-      signUp,
-      userName,
       store,
     };
   },

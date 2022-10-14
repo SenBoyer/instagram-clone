@@ -63,7 +63,7 @@
           <template v-slot:append>
             <q-btn
               v-if="!loadingState && locationSupported"
-              @click="getLocation"
+              @click="getLocation()"
               round
               dense
               flat
@@ -118,7 +118,6 @@ export default defineComponent({
     const loadingState = ref(false);
     const $q = useQuasar();
     const store = useUsernameStore();
-    console.log("CameraPage store.name= ", store.name);
 
     const initCamera = () => {
       navigator.mediaDevices
@@ -238,7 +237,6 @@ export default defineComponent({
       axios
         .post(`${process.env.API}/createPost`, formData)
         .then((response) => {
-          console.log("response = ", response);
           $q.notify({
             message: "Post created!",
             actions: [{ label: "Dismiss", color: "white" }],
@@ -256,9 +254,6 @@ export default defineComponent({
           });
           this.$q.loading.hide();
         });
-
-      console.log("POST BUTTON PRESSED");
-      console.log("posts.name=", posts.name);
     }
 
     function dataURItoBlob(dataURI) {
