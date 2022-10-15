@@ -24,6 +24,14 @@
         color="grey-10"
         icon="fa-solid fa-camera"
       />
+      <q-btn
+        v-else-if="hasCameraSupport && isMobile"
+        @click="switchCamera()"
+        :disable="imageCaptured"
+        round
+        color="grey-10"
+        icon="fa-solid fa-rotate"
+      />
       <q-file
         v-else
         @input="captureImageFallback"
@@ -118,11 +126,31 @@ export default defineComponent({
     const loadingState = ref(false);
     const $q = useQuasar();
     const store = useUsernameStore();
+    const frontCamera = ref(true);
+    const isMobile = ref(false);
+
+    const deviceType = () => {
+      let ua = navigator.userAgent;
+      if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+        isMobile.value = true;
+      } else if (
+        /Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(
+          ua
+        )
+      ) {
+        isMobile.value = true;
+      }
+    };
+
+    const switchCamera = () => {
+      frontCamera.value = !frontCamera.value;
+    };
 
     const initCamera = () => {
       navigator.mediaDevices
         .getUserMedia({
           video: true,
+          facingMode: frontCamera ? "user" : "environment",
         })
         .then((stream) => {
           video.value.srcObject = stream;
@@ -290,6 +318,7 @@ export default defineComponent({
 
     onMounted(() => {
       initCamera();
+      deviceType();
     });
 
     return {
@@ -311,6 +340,10 @@ export default defineComponent({
       locationSuccess,
       loadingState,
       locationSupported,
+      switchCamera,
+      deviceType,
+      isMobile,
+      frontCamera,
     };
   },
 });

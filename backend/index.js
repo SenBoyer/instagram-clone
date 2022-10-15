@@ -1,38 +1,45 @@
 //========DEPENDENCIES==========
 const express = require("express");
-const { initializeApp, cert } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const {
+  initializeApp,
+  applicationDefault,
+  cert,
+} = require("firebase-admin/app");
+const {
+  getFirestore,
+  Timestamp,
+  FieldValue,
+} = require("firebase-admin/firestore");
 const { getStorage } = require("firebase-admin/storage");
 const { v4: uuidv4 } = require("uuid");
-const cors = require("cors");
-const busboy = require("busboy");
+var cors = require("cors");
+let busboy = require("busboy");
+let fields = {};
+let fileData = {};
 let path = require("path");
 let os = require("os");
 let fs = require("fs");
-let fields = {};
-let fileData = {};
 
-//========EXPRESS JS==========
-
+//========EXPRESS JS CONFIG==========//
 const app = express();
+const port = 3000;
 app.use(cors());
 
-//========FIREBASE==========
+//========FIREBASE CONFIG==========
 
 const serviceAccount = require("./serviceAccountKey.json");
-const { useAttrs } = require("vue");
-
 initializeApp({
   credential: cert(serviceAccount),
   storageBucket: "finstagram-3585f.appspot.com",
 });
 
 const db = getFirestore();
+
 const bucket = getStorage().bucket();
 
-//========END POINTS========
-
+//========ENDPOINTS==========//
 app.get("/posts", (request, response) => {
+  response.set("Access-Control-Allow-Origin", "*");
   let posts = [];
   db.collection("posts")
     .orderBy("date", "desc")
@@ -107,10 +114,11 @@ app.post("/createPost", (request, response) => {
           imgUrl: `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${uploadedFile.name}?alt=media&token=${token_id}`,
           name: fields.name,
         })
-        .then((req, res) => {
-          response.send("Post created");
+        .then((req, response) => {
+          console.log(response);
         });
     }
+    response.end();
   });
   request.pipe(bb);
 });
@@ -122,4 +130,4 @@ app.delete("/deletePost/:id", (req, res) => {
 });
 
 //========LOCALHOST LISTEN==========
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
