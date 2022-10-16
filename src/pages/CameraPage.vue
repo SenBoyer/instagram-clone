@@ -16,22 +16,31 @@
       />
     </div>
     <div class="text-center q-pa-md">
-      <q-btn
-        v-if="hasCameraSupport"
-        @click="captureImage()"
-        :disable="imageCaptured"
-        round
-        color="grey-10"
-        icon="fa-solid fa-camera"
-      />
-      <q-btn
-        v-else-if="hasCameraSupport && isMobile"
-        @click="switchCamera()"
-        :disable="imageCaptured"
-        round
-        color="grey-10"
-        icon="fa-solid fa-rotate"
-      />
+      <div v-if="hasCameraSupport && isMobile">
+        <q-btn
+          @click="captureImage()"
+          :disable="imageCaptured"
+          round
+          color="grey-10"
+          icon="fa-solid fa-camera"
+        />
+        <q-btn
+          @click="switchCamera()"
+          :disable="imageCaptured"
+          round
+          color="grey-10"
+          icon="fa-solid fa-rotate"
+        />
+      </div>
+      <div v-else-if="hasCameraSupport && !isMobile">
+        <q-btn
+          @click="captureImage()"
+          :disable="imageCaptured"
+          round
+          color="grey-10"
+          icon="fa-solid fa-camera"
+        />
+      </div>
       <q-file
         v-else
         @input="captureImageFallback"
